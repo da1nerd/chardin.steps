@@ -10,10 +10,58 @@
         var _this = this;
 
         this.$el = $(el);
+		
         $(window).resize(function() {
           return _this.refresh();
         });
       }
+	  
+  	  chardinJs.prototype._steps = function() {
+    		var steps = this.$el.find('.step').get().sort(function(a, b) {
+      	  return $(a).data("order") - $(b).data("order");
+      	});
+        
+        var stepList = null;
+        var curStep = null;
+        
+        function makeStep(data, prev) {
+          return {
+            prev: prev, 
+            next: null, 
+            data: data,
+            activate: function() {
+              this.data.attr("data-intro", this.data.data("step"));
+            },
+            deactivate: function() {
+              this.data.removeAttr("data-intro");
+            }
+          };
+        }
+      
+        $.each(steps, function(index, step) {
+          var data = $(step);
+          if(!stepList) {
+            stepList = makeStep(data, null);
+            curStep = stepList;
+          } else {
+            curStep.next = makeStep(data, curStep);
+            curStep = curStep.next;
+          }
+        });
+        
+        return stepList;
+  	  };
+	  
+  	  chardinJs.prototype._remove_layers = function() {
+  	    var $container = this.$el;
+        $container.find('.chardinjs-helper-layer').remove();
+        $container.find('.chardinjs-show-element').removeClass('chardinjs-show-element');
+        $container.find('.chardinjs-relative-position').removeClass('chardinjs-relative-position');
+  	  };
+	  
+  	  chardinJs.prototype._cur_step_elements = function() {
+	  	  return this.$el.find('*[data-intro]:visible');
+  	  };
 
       chardinJs.prototype.start = function() {
         var el, _i, _len, _ref;
@@ -21,31 +69,65 @@
         if (this._overlay_visible()) {
           return false;
         }
+        
         this._add_overlay_layer();
-        _ref = this.$el.find('*[data-intro]:visible');
+
+		    this.steps = this._steps();
+		    this.curStep = this.steps;
+        var step = this.steps;
+        while(step) {
+          step.deactivate();
+          step = step.next;
+        }
+        this.curStep.activate();
+        
+        _ref = this._cur_step_elements();
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           el = _ref[_i];
           this._show_element(el);
         }
         return this.$el.trigger('chardinJs:start');
       };
-	  
+  
       chardinJs.prototype.reload = function() {
         var el, _i, _len, _ref;
-		
-		this.start();
-		
-        this.$el.find('.chardinjs-helper-layer').remove();
-        this.$el.find('.chardinjs-show-element').removeClass('chardinjs-show-element');
-        this.$el.find('.chardinjs-relative-position').removeClass('chardinjs-relative-position');
+	
+  	    this.start(); // make sure we've started
+	
+        this._remove_layers();
 
-        _ref = this.$el.find('*[data-intro]:visible');
+        _ref = this._cur_step_elements();
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           el = _ref[_i];
           this._show_element(el);
         }
-        return this.$el.trigger('chardinJs:start');
+        return this;
       };
+      
+      chardinJs.prototype._change_step = function(direction, on_done) {
+        if(this.curStep) {
+          this.curStep.deactivate();
+          this.curStep = this.curStep[direction];
+          if(this.curStep) {
+            this.curStep.activate();
+            this.reload();
+          } else if(on_done) {
+            on_done.call(this);
+          }
+        }
+      };
+	  
+  	  chardinJs.prototype.next = function() {
+        this._change_step('next', function() {
+          this.stop();
+        });
+  	  };
+      
+  	  chardinJs.prototype.prev = function() {
+        this._change_step('prev', function() {
+          this.curStep = this.steps;
+        });
+  	  };
 
       chardinJs.prototype.toggle = function() {
         if (!this._overlay_visible()) {
@@ -59,7 +141,7 @@
         var el, _i, _len, _ref, _results;
 
         if (this._overlay_visible()) {
-          _ref = this.$el.find('*[data-intro]:visible');
+          _ref = this._cur_step_elements;
           _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             el = _ref[_i];
@@ -75,9 +157,7 @@
         this.$el.find(".chardinjs-overlay").fadeOut(function() {
           return $(this).remove();
         });
-        this.$el.find('.chardinjs-helper-layer').remove();
-        this.$el.find('.chardinjs-show-element').removeClass('chardinjs-show-element');
-        this.$el.find('.chardinjs-relative-position').removeClass('chardinjs-relative-position');
+        this._remove_layers();
         if (window.removeEventListener) {
           window.removeEventListener("keydown", this._onKeyDown, true);
         } else {
@@ -222,10 +302,10 @@
       };
 
       return chardinJs;
-
     })();
+  
     return $.fn.extend({
-      chardinJs: function() {
+      chardinjssteps: function() {
         var $this, args, data, option;
 
         option = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
@@ -241,5 +321,4 @@
       }
     });
   })(window.jQuery, window);
-
 }).call(this);

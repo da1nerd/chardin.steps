@@ -1,38 +1,32 @@
 $(document).ready(function() {
-	var steps = $('.step').get().sort(function(a, b) {
-	    return $(a).data("order") - $(b).data("order");
+	var startBtn = $('.start-btn');
+	var nextBtn = $('.next-btn').hide();
+	var prevBtn = $('.prev-btn').hide();
+	
+	var stepsController = $('body').chardinjssteps();
+  
+  $('body').on('chardinJs:start', function() {
+    startBtn.hide();
+    nextBtn.show();
+    prevBtn.show();
+  });
+  
+  $('body').on('chardinJs:stop', function() {
+    startBtn.show();
+    nextBtn.hide();
+    prevBtn.hide();
+  });
+	
+	startBtn.on('click', function(e) {
+		e.preventDefault();
+		stepsController.start();
 	});
-	
-	steps = $.map(steps, function(step, index) {
-		return $(step);
+	nextBtn.on('click', function(e) {
+		e.preventDefault();
+		stepsController.next();
 	});
-	
-	var nextBtn = $('.next-btn').addClass('chardinjs-show-element');
-	
-	(function(nextBtn, stepList) {
-		var steps = stepList;
-		var cur = 0;
-		
-		function next() {
-			if(cur < steps.length) {
-				steps[cur].attr("data-intro", steps[cur].data("step"));
-				if(cur > 0) {
-					steps[cur-1].removeAttr("data-intro");
-				}
-				++cur;
-			} else {
-				steps[cur-1].removeAttr("data-intro");
-				cur = 0;
-				next();
-			}
-		}
-		
-		nextBtn.on('click', function(e) {
-			e.preventDefault();
-			
-			next();
-			
-			$('body').chardinJs('reload');
-		});
-	})(nextBtn, steps);
+	prevBtn.on('click', function(e) {
+		e.preventDefault();
+		stepsController.prev();
+	});
 });
