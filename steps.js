@@ -16,7 +16,24 @@ $(document).ready(function() {
 	});
   
   // can also override the settings programmatically like so:
-  // stepsController.options['click_to_dismiss'] = true;
+  //stepsController.options['click_to_dismiss'] = true;
+  
+  var stepList = $('.step-list');
+  // NOTE: data-order could be anything (even an object),
+  //       but just using numbers for right now.
+  var stepTitles = {
+    1 : 'My Rockin\' Title',
+    2 : 'I am hungry',
+    3 : 'Make me a sandwich',
+    4 : 'Sudo make me a sandwich'
+  };
+  stepsController.steps().each(function(index, stepItems) {
+    var order = stepItems[0].data("order");
+    var title = stepTitles[order];
+    $('<li>').addClass('step-item').text(title).on('click', function() {
+      stepsController.goto(order);
+    }).appendTo(stepList);
+  });
   
   $('body').on('chardinStepsJs:start', function() {
     startBtn.hide();

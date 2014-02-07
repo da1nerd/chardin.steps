@@ -15,8 +15,21 @@
           return _this.refresh();
         });
       }
+      
+      chardinJs.prototype.steps = function() {
+        if(!this._steps) {
+          this.reset();
+        }
+        var step = this._steps;
+        var steps = [];
+        while(step) {
+          steps.push(step.data);
+          step = step.next;
+        }
+        return $(steps);
+      };
 	  
-  	  chardinJs.prototype._steps = function() {
+  	  chardinJs.prototype._make_steps = function() {
         var steps = this.$el.find('.step').get().sort(function(a, b) {
       	  return $(a).data("order") - $(b).data("order");
       	});
@@ -73,9 +86,9 @@
   	  };
       
       chardinJs.prototype.reset = function() {
-        this.steps = this._steps();
-        this.curStep = this.steps;
-        var step = this.steps;
+        this._steps = this._make_steps();
+        this._curStep = this._steps;
+        var step = this._steps;
         while(step) {
           step.deactivate();
           step = step.next;
@@ -107,10 +120,10 @@
         
         var already_had_overlay = this._overlay_visible();
 	
-        if(!this.steps || !this.curStep || (this.options.reset_on_resume && !already_had_overlay)) {
+        if(!this._steps || !this._curStep || (this.options.reset_on_resume && !already_had_overlay)) {
   		    this.reset();
         }
-        this.curStep.activate();
+        this._curStep.activate();
         
         this._remove_layers();
         this._add_overlay_layer();
@@ -129,11 +142,11 @@
       };
       
       chardinJs.prototype._change_step = function(direction, on_done) {
-        if(this.curStep) {
-          this.curStep.deactivate();
-          this.curStep = this.curStep[direction];
-          if(this.curStep) {
-            this.curStep.activate();
+        if(this._curStep) {
+          this._curStep.deactivate();
+          this._curStep = this._curStep[direction];
+          if(this._curStep) {
+            this._curStep.activate();
             this.reload();
           } else if(on_done) {
             on_done.call(this);
@@ -150,15 +163,16 @@
       
   	  chardinJs.prototype.prev = function() {
         return this._change_step('prev', function() {
-          this.curStep = this.steps;
+          this._curStep = this._steps;
         });
   	  };
       
       chardinJs.prototype.goto = function(i) {
         var order = (Object(i) === i) ? $(i).data("order") : i;
+        this.start();
         this.reset();
-        while(this.curStep && this.curStep.order != order) {
-          this.curStep = this.curStep.next;
+        while(this._curStep && this._curStep.order != order) {
+          this._curStep = this._curStep.next;
         }
         return this.reload(); //don't worry: this knows how to handle a null curStep
       };

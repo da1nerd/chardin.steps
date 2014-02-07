@@ -18,10 +18,20 @@
 	.step[data-order="3"] {
 		background-color: blue;
 	}
-  .steps-nav {
+  .nav {
     position: relative;
     z-index: 9999999;
-    opacity: 0.8;
+    opacity: 1.0;
+    padding-top: 20px;
+    clear: both;
+  }
+  .step-list {
+    clear: both;
+    display: inline-block;
+  }
+  .step-item:hover {
+    cursor: pointer;
+    text-decoration: underline;
   }
 	</style>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -37,8 +47,13 @@
   <div class="step" data-step="yadda1" data-order="1"></div>
 	<div class="step" data-step="yadda3" data-order="3"></div>
 	
-  <a href="#" class="steps-nav start-btn">Start</a>
-	<a href="#" class="steps-nav prev-btn">Prev</a>
-  <a href="#" class="steps-nav next-btn">Next</a>
+  <div class="nav">
+    <a href="#" class="steps-nav start-btn">Start</a>
+  	<a href="#" class="steps-nav prev-btn">Prev</a>
+    <a href="#" class="steps-nav next-btn">Next</a>
+  </div>
+  
+  <ul class="step-list">
+  </ul>
 </body>
 </html>
