@@ -17,9 +17,24 @@
       }
 	  
   	  chardinJs.prototype._steps = function() {
-    		var steps = this.$el.find('.step').get().sort(function(a, b) {
+        var steps = this.$el.find('.step').get().sort(function(a, b) {
       	  return $(a).data("order") - $(b).data("order");
       	});
+        
+        var groups = {};
+        $.each(steps, function(index, step) {
+          var $step = $(step);
+          var order = $step.data("order");
+          if(!groups[order]) {
+            groups[order] = [];
+          }
+          groups[order].push($step);
+        });
+        
+        var groupList = [];
+        $.each(groups, function(groupName, group) {
+          groupList.push(group);
+        });
         
         var stepList = null;
         var curStep = null;
@@ -29,16 +44,21 @@
             prev: prev, 
             next: null, 
             data: data,
+            order: data[0].data("order"),
             activate: function() {
-              this.data.attr("data-intro", this.data.data("step"));
+              $.each(this.data, function(index, step) {
+                step.attr("data-intro", step.data("step"));
+              });
             },
             deactivate: function() {
-              this.data.removeAttr("data-intro");
+              $.each(this.data, function(index, step) {
+                step.removeAttr("data-intro");
+              });
             }
           };
         }
       
-        $.each(steps, function(index, step) {
+        $.each(groupList, function(index, step) {
           var data = $(step);
           if(!stepList) {
             stepList = makeStep(data, null);
@@ -75,15 +95,11 @@
   	  };
 
       chardinJs.prototype.start = function() {
-        var el, _i, _len, _ref;
-
         if (this._overlay_visible()) {
           return false;
         }
         
-        this.reload();
-        this.$el.trigger('chardinStepsJs:start');
-        return this;
+        return this.reload();
       };
   
       chardinJs.prototype.reload = function() {
@@ -104,6 +120,11 @@
           el = _ref[_i];
           this._show_element(el);
         }
+        
+        if(!already_had_overlay) {
+          this.$el.trigger('chardinStepsJs:start');
+        }
+        
         return this;
       };
       
@@ -134,8 +155,9 @@
   	  };
       
       chardinJs.prototype.goto = function(i) {
+        var order = (Object(i) === i) ? $(i).data("order") : i;
         this.reset();
-        while(this.curStep && this.curStep.data.data("order") != i) {
+        while(this.curStep && this.curStep.order != order) {
           this.curStep = this.curStep.next;
         }
         return this.reload(); //don't worry: this knows how to handle a null curStep
