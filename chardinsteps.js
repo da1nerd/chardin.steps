@@ -5,7 +5,7 @@
   (function($, window) {
     var chardinJs;
 
-    chardinJs = (function() {
+    chardinStepsJs = (function() {
       function chardinJs(el) {
         var _this = this;
 
@@ -51,6 +51,17 @@
         
         return stepList;
   	  };
+      
+      chardinJs.prototype.reset = function() {
+        this.steps = this._steps();
+        this.curStep = this.steps;
+        var step = this.steps;
+        while(step) {
+          step.deactivate();
+          step = step.next;
+        }
+        return this;
+      };
 	  
   	  chardinJs.prototype._remove_layers = function() {
   	    var $container = this.$el;
@@ -70,31 +81,23 @@
           return false;
         }
         
-        this._add_overlay_layer();
-
-		    this.steps = this._steps();
-		    this.curStep = this.steps;
-        var step = this.steps;
-        while(step) {
-          step.deactivate();
-          step = step.next;
-        }
-        this.curStep.activate();
-        
-        _ref = this._cur_step_elements();
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          el = _ref[_i];
-          this._show_element(el);
-        }
-        return this.$el.trigger('chardinJs:start');
+        this.reload();
+        this.$el.trigger('chardinStepsJs:start');
+        return this;
       };
   
       chardinJs.prototype.reload = function() {
         var el, _i, _len, _ref;
+        
+        var already_had_overlay = this._overlay_visible();
 	
-  	    this.start(); // make sure we've started
-	
+        if(!this.steps || !this.curStep || (this.options.reset_on_resume && !already_had_overlay)) {
+  		    this.reset();
+        }
+        this.curStep.activate();
+        
         this._remove_layers();
+        this._add_overlay_layer();
 
         _ref = this._cur_step_elements();
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -115,19 +118,28 @@
             on_done.call(this);
           }
         }
+        return this;
       };
 	  
   	  chardinJs.prototype.next = function() {
-        this._change_step('next', function() {
+        return this._change_step('next', function() {
           this.stop();
         });
   	  };
       
   	  chardinJs.prototype.prev = function() {
-        this._change_step('prev', function() {
+        return this._change_step('prev', function() {
           this.curStep = this.steps;
         });
   	  };
+      
+      chardinJs.prototype.goto = function(i) {
+        this.reset();
+        while(this.curStep && this.curStep.data.data("order") != i) {
+          this.curStep = this.curStep.next;
+        }
+        return this.reload(); //don't worry: this knows how to handle a null curStep
+      };
 
       chardinJs.prototype.toggle = function() {
         if (!this._overlay_visible()) {
@@ -135,6 +147,7 @@
         } else {
           return this.stop();
         }
+        return this;
       };
 
       chardinJs.prototype.refresh = function() {
@@ -165,7 +178,14 @@
             document.detachEvent("onkeydown", this._onKeyDown);
           }
         }
-        return this.$el.trigger('chardinJs:stop');
+        this.$el.trigger('chardinStepsJs:stop');
+        return this;
+      };
+      
+      chardinJs.prototype._stop_requested = function() {
+        if(this.options.click_to_dismiss) {
+          this.stop();
+        }
       };
 
       chardinJs.prototype._overlay_visible = function() {
@@ -194,7 +214,7 @@
         }
         this.$el.get()[0].appendChild(overlay_layer);
         overlay_layer.onclick = function() {
-          return _this.stop();
+          return _this._stop_requested();
         };
         return setTimeout(function() {
           styleText += "opacity: .8;opacity: .8;-ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=80)';filter: alpha(opacity=80);";
@@ -305,19 +325,25 @@
     })();
   
     return $.fn.extend({
-      chardinjssteps: function() {
-        var $this, args, data, option;
+      chardinstepsjs: function() {
+        var $this, args, stepsController, option;
 
         option = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
         $this = $(this[0]);
-        data = $this.data('chardinJs');
-        if (!data) {
-          $this.data('chardinJs', (data = new chardinJs(this, option)));
+        stepsController = $this.data('chardinStepsJs');
+        if (!stepsController) {
+          $this.data('chardinStepsJs', (stepsController = new chardinStepsJs(this, option)));
         }
-        if (typeof option === 'string') {
-          data[option].apply(data, args);
+        
+        stepsController.options = {
+          click_to_dismiss: true,
+          reset_on_resume: false
+        };
+        
+        if (option === Object(option)) {
+          $.extend(stepsController.options, option);
         }
-        return data;
+        return stepsController;
       }
     });
   })(window.jQuery, window);

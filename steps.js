@@ -3,15 +3,18 @@ $(document).ready(function() {
 	var nextBtn = $('.next-btn').hide();
 	var prevBtn = $('.prev-btn').hide();
 	
-	var stepsController = $('body').chardinjssteps();
+	var stepsController = $('body').chardinstepsjs({
+    //click_to_dismiss: false,
+	  //reset_on_resume: true
+	});
   
-  $('body').on('chardinJs:start', function() {
+  $('body').on('chardinStepsJs:start', function() {
     startBtn.hide();
     nextBtn.show();
     prevBtn.show();
   });
   
-  $('body').on('chardinJs:stop', function() {
+  $('body').on('chardinStepsJs:stop', function() {
     startBtn.show();
     nextBtn.hide();
     prevBtn.hide();
