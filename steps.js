@@ -3,11 +3,13 @@ $(document).ready(function() {
 	var nextBtn = $('.next-btn').hide();
 	var prevBtn = $('.prev-btn').hide();
   
+  /*
   $('.step').on('click', function() {
     // The "goto" method accepts any element (that has a data-order), 
     //  or any value that data-order can contain (number, string, etc)
     stepsController.goto(this); 
   });
+  */
 	
 	var stepsController = $('body').chardinstepsjs({
     // override settings here
