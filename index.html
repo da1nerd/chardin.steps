@@ -19,25 +19,45 @@
 		background-color: blue;
 	}
   .nav {
+    float: left;
+    font-size: 0;
+    margin-top: 200px;
+  }
+  .steps-nav {
+    margin: 0;
+    padding: 0;
     position: relative;
     z-index: 9999999;
     opacity: 1.0;
-    padding-top: 20px;
     clear: both;
+    color: #fefefe;
+    width: 100px;
+    height: 50px;
+    border: none;
+    outline: none;
+    background-color: rgb(20, 20, 220);
+    text-decoration: none;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 15px;
   }
-  .step-list {
-    clear: both;
-    display: inline-block;
-  }
-  .step-item:hover {
+  .steps-nav:hover {
     cursor: pointer;
-    text-decoration: underline;
+    background-color: rgb(25, 20, 180);
+  }
+  .steps-btn {
+    background-color: gray;
+    color: black;
+  }
+  .steps-btn:hover {
+    background-color: #555
   }
 	</style>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<link rel="stylesheet" href="chardinsteps.css">
 	<script src="chardinsteps.js"></script>
 	<script src="steps.js"></script>
+  <link type="text/css" rel="stylesheet" href="jquery-dropdown/jquery.dropdown.css">
+  <script type="text/javascript" src="jquery-dropdown/jquery.dropdown.min.js"></script>
 </head>
 <body>
   <div class="step" data-step="more yadda3" data-order="3"></div>
@@ -48,12 +68,15 @@
 	<div class="step" data-step="yadda3" data-order="3"></div>
 	
   <div class="nav">
-    <a href="#" class="steps-nav start-btn">Start</a>
-  	<a href="#" class="steps-nav prev-btn">Prev</a>
-    <a href="#" class="steps-nav next-btn">Next</a>
+    <button class="steps-nav start-btn">Start</button>
+  	<button class="steps-nav prev-btn">Prev</button>
+    <button class="steps-nav next-btn">Next</button>
+    <button class="steps-nav steps-btn" type="button" data-dropdown="#dropdown">Steps</button>
   </div>
   
-  <ul class="step-list">
-  </ul>
+  <div id="dropdown" class="dropdown dropdown-tip">
+    <ul class="step-list dropdown-menu">
+    </ul>
+  </div>
 </body>
 </html>

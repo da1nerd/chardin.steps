@@ -30,9 +30,11 @@ $(document).ready(function() {
   stepsController.steps().each(function(index, stepItems) {
     var order = stepItems[0].data("order");
     var title = stepTitles[order];
-    $('<li>').addClass('step-item').text(title).on('click', function() {
-      stepsController.goto(order);
-    }).appendTo(stepList);
+    $('<li>').addClass('step-item').append(
+      $('<a>').text(title).on('click', function() {
+        stepsController.goto(order);
+      })
+    ).appendTo(stepList);
   });
   
   $('body').on('chardinStepsJs:start', function() {
